@@ -8,9 +8,9 @@
 
 **Lightweight, MCP-native agent harness for Python developers who want a local loop today and enterprise governance tomorrow — without rewriting the agent.**
 
-[![Watch the Demo](docs/demo-poster.svg)](https://www.loom.com/share/REPLACE_WITH_LOOM_ID)
+[![Watch the Demo](docs/demo-poster.png)](https://github.com/kimss-ai/kimss-content/raw/main/hyperframes/kimss-readme-forge-zero-to-one/renders/kimss-readme-forge-zero-to-one.mp4)
 
-> **Demo placeholder:** record the zero-to-one Loom (`gateway="kimss"` upgrade), then replace `REPLACE_WITH_LOOM_ID` above. Shot list lives in kimss-content `gtm/kimss-forge-0.1.1/loom-zero-to-one.md`.
+> **Demo (16:9):** local agent → soft Authority Boundary warning → `gateway="kimss"` → Kill Switch free / enterprise path. Voice: Azure Cognitive Andrew DragonHD. Source project: kimss-content `hyperframes/kimss-readme-forge-zero-to-one/`.
 
 ## Why this exists
 
