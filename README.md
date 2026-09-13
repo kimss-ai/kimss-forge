@@ -6,6 +6,8 @@
 
 **Build and run agents with any model — free, forever. Connect Kimss when production needs governance.**
 
+> **Zero-to-one demo (Loom):** _paste public Loom URL here after recording_ — local agent → soft Authority Boundary warning → `gateway="kimss"`. Shot list: kimss-content `gtm/kimss-forge-0.1.1/loom-zero-to-one.md`.
+
 **Kimss Forge** (`kimss-forge` on PyPI, `import kimss_forge`) is a small MIT-licensed harness: a local multi-turn tool loop that talks to any OpenAI-compatible endpoint (OpenAI, Azure/Foundry, Anthropic-compatible proxies, Ollama, vLLM). **No Kimss account required** to develop and test.
 
 When your security team needs identity, kill switch, budgets, and audit for production, flip one argument — `gateway="kimss"` — and traffic routes through the [Kimss AI Gateway](https://kimss.ai).
