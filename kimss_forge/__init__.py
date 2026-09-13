@@ -8,7 +8,7 @@ from .agent import Agent, AgentResult
 from .gateway import KIMSS_GATEWAY_BASE_URL, gateway_headers
 from .tools import Tool, tool
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __all__ = [
     "Agent",
     "AgentResult",

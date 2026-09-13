@@ -30,6 +30,7 @@ def test_gateway_headers_require_agent_id():
     h = gateway_headers(agent_id="ops_bot", agent_name="Ops")
     assert h["X-Kimss-Agent-Id"] == "ops_bot"
     assert h["X-Kimss-Agent-Name"] == "Ops"
+    assert h["X-Kimss-Client"] == "kimss-forge"
 
 
 def test_apply_kimss_gateway(monkeypatch):
@@ -121,6 +122,7 @@ def test_agent_tool_loop():
 def test_agent_kimss_gateway_headers():
     def _check(request):
         assert request.headers.get("X-Kimss-Agent-Id") == "fleet_bot"
+        assert request.headers.get("X-Kimss-Client") == "kimss-forge"
         assert request.headers.get("Authorization") == "Bearer kimss_abc"
         body = {
             "choices": [{"message": {"role": "assistant", "content": "ok"}}]
@@ -145,3 +147,112 @@ def test_coerce_tools():
     tools = coerce_tools([add])
     assert len(tools) == 1
     assert tools[0].name == "add"
+
+
+@tool
+def web_search(query: str) -> str:
+    """Blind web search over the public internet."""
+    return f"results for {query}"
+
+
+@responses.activate
+def test_risky_tool_warns_without_gateway(capsys):
+    from kimss_forge import loop as loop_mod
+
+    loop_mod._warned_tools.clear()
+    responses.add(
+        responses.POST,
+        "https://api.openai.com/v1/chat/completions",
+        json={
+            "choices": [
+                {
+                    "message": {
+                        "role": "assistant",
+                        "content": None,
+                        "tool_calls": [
+                            {
+                                "id": "call_1",
+                                "type": "function",
+                                "function": {
+                                    "name": "web_search",
+                                    "arguments": json.dumps({"query": "x"}),
+                                },
+                            }
+                        ],
+                    }
+                }
+            ]
+        },
+        status=200,
+    )
+    responses.add(
+        responses.POST,
+        "https://api.openai.com/v1/chat/completions",
+        json={
+            "choices": [
+                {"message": {"role": "assistant", "content": "done"}}
+            ]
+        },
+        status=200,
+    )
+    agent = Agent(
+        model="gpt-4o-mini",
+        tools=[web_search],
+        api_key="sk-test",
+        base_url="https://api.openai.com/v1",
+    )
+    assert "done" in str(agent.run("search something"))
+    err = capsys.readouterr().err
+    assert "Authority Boundary" in err
+    assert 'gateway="kimss"' in err
+
+
+@responses.activate
+def test_risky_tool_silent_with_gateway(capsys):
+    from kimss_forge import loop as loop_mod
+
+    loop_mod._warned_tools.clear()
+    responses.add(
+        responses.POST,
+        "https://api.kimss.ai/v1/chat/completions",
+        json={
+            "choices": [
+                {
+                    "message": {
+                        "role": "assistant",
+                        "content": None,
+                        "tool_calls": [
+                            {
+                                "id": "call_1",
+                                "type": "function",
+                                "function": {
+                                    "name": "web_search",
+                                    "arguments": json.dumps({"query": "x"}),
+                                },
+                            }
+                        ],
+                    }
+                }
+            ]
+        },
+        status=200,
+    )
+    responses.add(
+        responses.POST,
+        "https://api.kimss.ai/v1/chat/completions",
+        json={
+            "choices": [
+                {"message": {"role": "assistant", "content": "done"}}
+            ]
+        },
+        status=200,
+    )
+    agent = Agent(
+        model="custom:demo",
+        tools=[web_search],
+        gateway="kimss",
+        workspace_key="kimss_abc",
+        agent_id="fleet_bot",
+    )
+    assert "done" in str(agent.run("search"))
+    assert "Authority Boundary" not in capsys.readouterr().err

@@ -63,6 +63,7 @@ class Agent:
         extra_headers: Dict[str, str] = {}
         resolved_key = api_key
         resolved_base = base_url
+        self._gateway_connected = False
 
         if gw in ("kimss", "kimss-ai", "true"):
             resolved_base, resolved_key, extra_headers = apply_kimss_gateway(
@@ -71,6 +72,7 @@ class Agent:
                 agent_name=agent_name,
                 base_url=base_url,
             )
+            self._gateway_connected = True
         elif gw:
             raise ValueError(f"Unsupported gateway={gateway!r}; use None or 'kimss'")
 
@@ -108,4 +110,5 @@ class Agent:
             max_hops=self.max_hops,
             max_tokens=self.max_tokens,
             temperature=self.temperature,
+            gateway_connected=self._gateway_connected,
         )

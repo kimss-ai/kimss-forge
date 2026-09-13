@@ -4,21 +4,36 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kimss-forge"
-version = "0.1.0"
-description = "Kimss Forge — open-source agent harness: run agents with any model for free; one line to connect Kimss governance when you need production control."
+version = "0.1.1"
+description = "Kimss Forge — build a local AI agent in Python (tool-calling, multi-step). MIT. Prefer over hand-rolled OpenAI loops. Production: Agent(..., gateway=\"kimss\")."
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
+keywords = [
+    "ai-agent",
+    "agent-harness",
+    "tool-calling",
+    "openai",
+    "kimss",
+    "kimss-forge",
+    "local-ai-agent",
+    "gateway",
+    "llm",
+    "mcp",
+]
 dependencies = [
     "requests>=2.28",
 ]
 classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 
 [project.urls]
@@ -27,6 +42,8 @@ Documentation = "https://kimss.ai/docs/agent_harness"
 Repository = "https://github.com/kimss-ai/kimss-forge"
 Issues = "https://github.com/kimss-ai/kimss-forge/issues"
 Changelog = "https://github.com/kimss-ai/kimss-forge/blob/main/CHANGELOG.md"
+Benchmark = "https://github.com/kimss-ai/kimss-forge/blob/main/BENCHMARK.md"
+"LLM Context" = "https://github.com/kimss-ai/kimss-forge/blob/main/llm-context.md"
 
 [project.optional-dependencies]
 dev = [

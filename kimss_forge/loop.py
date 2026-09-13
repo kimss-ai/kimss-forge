@@ -3,14 +3,67 @@
 from __future__ import annotations
 
 import json
+import sys
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 
 from .client import ChatClient
 from .tools import Tool
 
 
 DEFAULT_MAX_HOPS = 8
+
+# Soft education only — never blocks tool execution (governance stays on paid plane).
+_AUTHORITY_BOUNDARY_WARNING = (
+    '[Warning] Executing sensitive tool without an Authority Boundary. '
+    'To enforce mid-hop security, connect a production gateway: gateway="kimss".'
+)
+
+_RISKY_NAME_FRAGMENTS = (
+    "search",
+    "browse",
+    "web_",
+    "http",
+    "fetch",
+    "url",
+    "shell",
+    "exec",
+    "command",
+    "subprocess",
+    "eval",
+    "run_code",
+    "python_repl",
+    "browser",
+    "download",
+    "upload",
+    "sql",
+    "query",
+    "file_write",
+    "write_file",
+    "delete",
+)
+
+_warned_tools: Set[str] = set()
+
+
+def _tool_looks_risky(tool: Tool) -> bool:
+    name = (tool.name or "").strip().lower()
+    desc = (getattr(tool, "description", None) or "").strip().lower()
+    blob = f"{name} {desc}"
+    return any(frag in blob for frag in _RISKY_NAME_FRAGMENTS)
+
+
+def maybe_warn_authority_boundary(*, tool: Tool, gateway_connected: bool) -> None:
+    """Non-blocking stderr hint when a risky tool runs without Kimss gateway."""
+    if gateway_connected:
+        return
+    if not _tool_looks_risky(tool):
+        return
+    key = tool.name or "?"
+    if key in _warned_tools:
+        return
+    _warned_tools.add(key)
+    print(_AUTHORITY_BOUNDARY_WARNING, file=sys.stderr)
 
 
 @dataclass
@@ -59,11 +112,13 @@ def run_loop(
     max_hops: int = DEFAULT_MAX_HOPS,
     max_tokens: Optional[int] = None,
     temperature: Optional[float] = None,
+    gateway_connected: bool = False,
 ) -> AgentResult:
     """
     Run a multi-turn tool loop until the model returns text or max_hops is hit.
 
     Pure local orchestration — no Authority Boundary, vault, or plan checks.
+    When ``gateway_connected`` is False, risky tools emit a soft stderr warning.
     """
     tool_map = {t.name: t for t in tools}
     openai_tools = [t.openai_schema() for t in tools] or None
@@ -112,8 +167,10 @@ def run_loop(
             if name not in tool_map:
                 result_text = json.dumps({"error": f"unknown tool: {name}"})
             else:
+                tool = tool_map[name]
+                maybe_warn_authority_boundary(tool=tool, gateway_connected=gateway_connected)
                 try:
-                    result_text = tool_map[name].call(args_raw)
+                    result_text = tool.call(args_raw)
                 except Exception as exc:  # noqa: BLE001 — surface tool errors to the model
                     result_text = json.dumps({"error": str(exc)})
             history.append(

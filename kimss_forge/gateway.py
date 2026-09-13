@@ -11,18 +11,24 @@ KIMSS_GATEWAY_HOST = "https://api.kimss.ai"
 # Header names match kimss_sdk / Invisible Proxy conventions.
 HEADER_AGENT_ID = "X-Kimss-Agent-Id"
 HEADER_AGENT_NAME = "X-Kimss-Agent-Name"
+HEADER_CLIENT = "X-Kimss-Client"
+CLIENT_KIMSS_FORGE = "kimss-forge"
 
 
 def gateway_headers(
     *,
     agent_id: str,
     agent_name: Optional[str] = None,
+    client: str = CLIENT_KIMSS_FORGE,
 ) -> Dict[str, str]:
     """Return attribution headers for traffic routed through the Kimss gateway."""
     aid = (agent_id or "").strip()
     if not aid:
         raise ValueError("agent_id is required when using the Kimss gateway")
-    headers: Dict[str, str] = {HEADER_AGENT_ID: aid}
+    headers: Dict[str, str] = {
+        HEADER_AGENT_ID: aid,
+        HEADER_CLIENT: (client or CLIENT_KIMSS_FORGE).strip() or CLIENT_KIMSS_FORGE,
+    }
     name = (agent_name or "").strip()
     if name:
         headers[HEADER_AGENT_NAME] = name
