@@ -21,6 +21,6 @@ Hermis is the proprietary Studio/server loop. Naming the OSS package after it wo
 
 ## Consequences
 
-- Mirror secrets: `KIMSS_FORGE_MIRROR_PAT` + `KIMSS_FORGE_MIRROR_REPO=kimss-ai/kimss-forge`
-- Non-runtime: `kimss_forge/` in `.deployexclude`
+- Mirror secrets: `KIMSS_SDK_MIRROR_PAT` (shared) + `KIMSS_FORGE_MIRROR_REPO=kimss-ai/kimss-forge`
+- Non-runtime: `kimss-forge/` in `.deployexclude`
 - Marketing `/open-source`, docs `/docs/agent_harness`
