@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="Kimss Forge demo  watch Loom">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#12151a"/>
+      <stop offset="55%" stop-color="#1c2430"/>
+      <stop offset="100%" stop-color="#2a2218"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <rect x="48" y="48" width="1184" height="624" rx="24" fill="none" stroke="#c4a574" stroke-opacity="0.35" stroke-width="2"/>
+  <text x="640" y="250" text-anchor="middle" fill="#f3efe6" font-family="Georgia, 'Times New Roman', serif" font-size="54">Kimss Forge</text>
+  <text x="640" y="320" text-anchor="middle" fill="#c4a574" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="28">gateway=&quot;kimss&quot;  one-line production bridge</text>
+  <circle cx="640" cy="460" r="54" fill="#c4a574"/>
+  <polygon points="625,430 675,460 625,490" fill="#12151a"/>
+  <text x="640" y="560" text-anchor="middle" fill="#9aa3ad" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="22">Watch the demo (replace Loom URL in README)</text>
+</svg>
