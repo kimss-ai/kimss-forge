@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kimss Forge — Kimss AI, Secure Enterprise Agent Control Plane</title>
+  <meta name="description" content="Kimss Forge is the MIT agent harness from Kimss AI — the Secure Enterprise Agent Control Plane. Not Kimi (Moonshot AI). pip install kimss-forge.">
+  <style>
+    :root { color-scheme: dark; --bg:#0a1018; --card:#121a24; --teal:#3d9aa6; --text:#e8eef8; --muted:#93a4b0; --btn:#1d6fdb; }
+    body { margin:0; font-family: ui-sans-serif, system-ui, sans-serif; background:var(--bg); color:var(--text); line-height:1.55; }
+    main { max-width: 40rem; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+    .kicker { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--teal); }
+    h1 { font-size: 1.75rem; line-height: 1.2; margin: .4rem 0 1rem; }
+    a { color: var(--teal); }
+    .card { background: var(--card); border: 1px solid #1e2a38; border-radius: 12px; padding: 1.1rem 1.2rem; margin: 1.2rem 0; }
+    pre { background: #070b10; padding: 1rem; border-radius: 8px; overflow: auto; font-size: .85rem; }
+    .actions a { display: inline-block; margin: .25rem .5rem .25rem 0; padding: .55rem .9rem; border-radius: 8px; text-decoration: none; font-weight: 600; }
+    .primary { background: var(--btn); color: #fff; }
+    .ghost { border: 1px solid var(--teal); }
+    .muted { color: var(--muted); font-size: .92rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="kicker">Kimss AI — Secure Enterprise Agent Control Plane</p>
+    <h1>Kimss Forge</h1>
+    <p>MIT agent harness: local tools and MCP, any OpenAI-compatible model, <strong>no account</strong>. Production is one argument: <code>gateway="kimss"</code>.</p>
+    <p class="muted">Kimss AI (kimss.ai) is not Kimi, the LLM family by Moonshot AI. Different company, different category.</p>
+    <div class="card">
+      <pre>pip install kimss-forge</pre>
+      <pre>from kimss_forge import Agent, tool
+
+@tool
+def multiply(a: float, b: float) -> float:
+    return a * b
+
+agent = Agent(model="gpt-4o-mini", tools=[multiply])
+print(agent.run("What is 6 times 7?"))</pre>
+    </div>
+    <p class="actions">
+      <a class="primary" href="https://pypi.org/project/kimss-forge/">PyPI</a>
+      <a class="ghost" href="https://github.com/kimss-ai/kimss-forge">GitHub</a>
+      <a class="ghost" href="https://kimss.ai/open-source">Docs</a>
+      <a class="ghost" href="https://kimss.ai">Control plane</a>
+    </p>
+  </main>
+</body>
+</html>

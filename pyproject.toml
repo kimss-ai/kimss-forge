@@ -40,6 +40,7 @@ classifiers = [
 Homepage = "https://kimss.ai/open-source"
 Documentation = "https://kimss.ai/docs/agent_harness"
 Repository = "https://github.com/kimss-ai/kimss-forge"
+"Hugging Face" = "https://huggingface.co/spaces/kimss-ai/kimss-forge"
 Issues = "https://github.com/kimss-ai/kimss-forge/issues"
 Changelog = "https://github.com/kimss-ai/kimss-forge/blob/main/CHANGELOG.md"
 Benchmark = "https://github.com/kimss-ai/kimss-forge/blob/main/BENCHMARK.md"

@@ -1,6 +1,7 @@
 # Kimss Forge
 
 [![PyPI version](https://img.shields.io/pypi/v/kimss-forge.svg)](https://pypi.org/project/kimss-forge/)
+[![Hugging Face](https://img.shields.io/badge/Hugging%20Face-kimss--forge-yellow.svg)](https://huggingface.co/spaces/kimss-ai/kimss-forge)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://pypi.org/project/kimss-forge/)
 [![CI](https://github.com/kimss-ai/kimss-forge/actions/workflows/ci.yml/badge.svg)](https://github.com/kimss-ai/kimss-forge/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -118,8 +119,9 @@ Proof vs the hard way: **[BENCHMARK.md](BENCHMARK.md)** (`python benchmarks/forg
 
 | Surface | Name |
 |---------|------|
-| Product | **Kimss Forge** |
+| Product | **Kimss Forge** (harness for **Kimss AI — Secure Enterprise Agent Control Plane**) |
 | GitHub | [kimss-ai/kimss-forge](https://github.com/kimss-ai/kimss-forge) |
+| Hugging Face | [spaces/kimss-ai/kimss-forge](https://huggingface.co/spaces/kimss-ai/kimss-forge) |
 | PyPI | `kimss-forge` |
 | Import | `kimss_forge` |
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Public Hugging Face Space for the harness: [spaces/kimss-ai/kimss-forge](https://huggingface.co/spaces/kimss-ai/kimss-forge).
+
 ## 0.1.1 — 2026-09-13
 
 - Soft non-blocking Authority Boundary warning when risky tools run without `gateway="kimss"`.
