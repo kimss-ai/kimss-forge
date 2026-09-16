@@ -1,12 +1,12 @@
 ---
 title: Kimss Forge
 emoji: 🛡️
-colorFrom: teal
+colorFrom: green
 colorTo: blue
 sdk: static
 pinned: false
 license: mit
-short_description: MIT agent harness from Kimss AI — the Secure Enterprise Agent Control Plane.
+short_description: MIT agent harness from Kimss AI (not a model host)
 tags:
   - agents
   - agent-harness
