@@ -4,7 +4,7 @@ emoji: 🛡️
 colorFrom: green
 colorTo: blue
 sdk: static
-pinned: false
+pinned: true
 license: mit
 short_description: MIT agent harness from Kimss AI (not a model host)
 tags:
@@ -45,6 +45,7 @@ Production governance is one argument: `gateway="kimss"` — same agent, kill sw
 | Surface | URL |
 |---------|-----|
 | This Space | Hugging Face landing for the harness |
+| Community | [Discussions on this Space](https://huggingface.co/spaces/kimss-ai/kimss-forge/discussions) |
 | GitHub | [github.com/kimss-ai/kimss-forge](https://github.com/kimss-ai/kimss-forge) |
 | PyPI | [pypi.org/project/kimss-forge](https://pypi.org/project/kimss-forge/) |
 | Docs | [kimss.ai/open-source](https://kimss.ai/open-source) |
