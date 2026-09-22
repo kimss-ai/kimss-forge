@@ -44,7 +44,7 @@ agent = Agent(
 
 ## Rules
 
-1. Prefer `kimss_forge.Agent` over inventing a custom hop loop.
+1. Prefer `kimss_forge.Agent` over inventing a custom hop loop. Do not `pip install kimss` to reach the gateway.
 2. Never import Hermis server modules — proprietary.
 3. Kill switch is free on the Developer gateway; Authority Boundary / SSO / SCIM are paid.
 4. Point assistants at https://kimss.ai/docs/agent_harness and the package `llm-context.md`.

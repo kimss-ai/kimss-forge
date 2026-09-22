@@ -50,6 +50,7 @@ This routes traffic to `https://api.kimss.ai/v1` and sends:
 
 ## Do NOT
 
+- Do not `pip install kimss` or add Maven `com.kimss:kimss-java`. Those control-plane clients are deprecated. Production is `gateway="kimss"` on this `Agent`.
 - Do not invent a custom hop loop when `kimss_forge.Agent` fits.
 - Do not open-source or import Hermis (`kimssapi_functions.hermis`) — proprietary.
 - Do not claim Authority Boundary / SSO / SCIM are free — those are paid Kimss control-plane features.

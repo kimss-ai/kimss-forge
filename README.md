@@ -129,9 +129,13 @@ Design boundary: **[ADR.md](ADR.md)**.
 
 ## Related
 
-- Control-plane client: [`kimss`](https://pypi.org/project/kimss/) · [kimss-python-sdk](https://github.com/kimss-ai/kimss-python-sdk)
-- Quickstart: [kimss-python-quickstart](https://github.com/kimss-ai/kimss-python-quickstart)
+Production governance is the Kimss gateway, not a second Python package.
+
+- Coding agents: [control-plane `AI_INTEGRATION.md`](https://github.com/kimss-ai/kimss-control-plane/blob/main/AI_INTEGRATION.md)
+- Product: [Route your traffic](https://kimss.ai/docs/route_traffic) · [Pricing](https://kimss.ai/pricing) · [Guardrails](https://kimss.ai/docs/trust_safety)
 - Docs: [Agent harness](https://kimss.ai/docs/agent_harness) · [Open source](https://kimss.ai/open-source)
+
+Do not `pip install kimss` or add Maven `com.kimss:kimss-java` to connect this harness. `gateway="kimss"` is the attach.
 
 ## License
 
