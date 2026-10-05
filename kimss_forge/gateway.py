@@ -12,6 +12,11 @@ KIMSS_GATEWAY_HOST = "https://api.kimss.ai"
 HEADER_AGENT_ID = "X-Kimss-Agent-Id"
 HEADER_AGENT_NAME = "X-Kimss-Agent-Name"
 HEADER_CLIENT = "X-Kimss-Client"
+HEADER_RUN_ID = "X-Kimss-Run-Id"
+HEADER_DEPTH = "X-Kimss-Depth"
+HEADER_PARENT_SPAN = "X-Kimss-Parent-Span"
+HEADER_SPAN_ID = "X-Kimss-Span-Id"
+HEADER_LINEAGE = "X-Kimss-Lineage"
 CLIENT_KIMSS_FORGE = "kimss-forge"
 
 
@@ -20,6 +25,11 @@ def gateway_headers(
     agent_id: str,
     agent_name: Optional[str] = None,
     client: str = CLIENT_KIMSS_FORGE,
+    run_id: Optional[str] = None,
+    depth: Optional[int] = None,
+    parent_span: Optional[str] = None,
+    span_id: Optional[str] = None,
+    lineage: Optional[str] = None,
 ) -> Dict[str, str]:
     """Return attribution headers for traffic routed through the Kimss gateway."""
     aid = (agent_id or "").strip()
@@ -32,6 +42,16 @@ def gateway_headers(
     name = (agent_name or "").strip()
     if name:
         headers[HEADER_AGENT_NAME] = name
+    if (run_id or "").strip():
+        headers[HEADER_RUN_ID] = str(run_id).strip()
+    if depth is not None:
+        headers[HEADER_DEPTH] = str(int(depth))
+    if (parent_span or "").strip():
+        headers[HEADER_PARENT_SPAN] = str(parent_span).strip()
+    if (span_id or "").strip():
+        headers[HEADER_SPAN_ID] = str(span_id).strip()
+    if (lineage or "").strip():
+        headers[HEADER_LINEAGE] = str(lineage).strip()
     return headers
 
 

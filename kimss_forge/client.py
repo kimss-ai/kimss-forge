@@ -76,6 +76,20 @@ class ChatClient:
         if resp.status_code >= 400:
             raise CompletionError(resp.status_code, resp.text)
         try:
-            return resp.json()
+            data = resp.json()
         except json.JSONDecodeError as exc:
             raise CompletionError(resp.status_code, resp.text) from exc
+        lineage = {}
+        for key in (
+            "X-Kimss-Run-Id",
+            "X-Kimss-Depth",
+            "X-Kimss-Parent-Span",
+            "X-Kimss-Span-Id",
+            "X-Kimss-Lineage",
+        ):
+            val = resp.headers.get(key)
+            if val:
+                lineage[key] = val
+        if lineage:
+            data["_kimss_lineage"] = lineage
+        return data

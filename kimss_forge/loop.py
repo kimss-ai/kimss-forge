@@ -7,7 +7,7 @@ import sys
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Set
 
-from .client import ChatClient
+from .client import ChatClient, CompletionError
 from .tools import Tool
 
 
@@ -129,13 +129,30 @@ def run_loop(
 
     for hop in range(max(1, max_hops)):
         hops = hop + 1
-        raw = client.chat_completions(
-            model=model,
-            messages=history,
-            tools=openai_tools,
-            max_tokens=max_tokens,
-            temperature=temperature,
-        )
+        try:
+            raw = client.chat_completions(
+                model=model,
+                messages=history,
+                tools=openai_tools,
+                max_tokens=max_tokens,
+                temperature=temperature,
+            )
+        except CompletionError as exc:
+            body = exc.body or ""
+            if "quarantined" in body.lower() or "delegation_" in body.lower():
+                payload = {
+                    "status": "quarantined",
+                    "reason": "authority_boundary_violation",
+                    "message": body[:500],
+                }
+                return AgentResult(
+                    text=json.dumps(payload),
+                    messages=history,
+                    hops=hops,
+                    tool_calls=recorded_calls,
+                    raw=payload,
+                )
+            raise
         last_raw = raw
         choices = raw.get("choices") or []
         if not choices:

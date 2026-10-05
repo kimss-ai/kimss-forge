@@ -88,6 +88,13 @@ class Agent:
             default_headers=extra_headers,
             timeout=timeout,
         )
+        if self._gateway_connected and "X-Kimss-Run-Id" not in extra_headers:
+            import uuid
+
+            extra_headers["X-Kimss-Run-Id"] = uuid.uuid4().hex
+            extra_headers["X-Kimss-Depth"] = "0"
+            extra_headers["X-Kimss-Span-Id"] = uuid.uuid4().hex[:16]
+            self._client.default_headers.update(extra_headers)
 
     def run(
         self,
