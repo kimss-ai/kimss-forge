@@ -92,4 +92,14 @@ class ChatClient:
                 lineage[key] = val
         if lineage:
             data["_kimss_lineage"] = lineage
+            try:
+                from .run_context import apply_response_lineage
+
+                apply_response_lineage(data)
+                # Keep child hops able to pick up the minted lineage token.
+                token = lineage.get("X-Kimss-Lineage")
+                if token:
+                    self.default_headers["X-Kimss-Lineage"] = token
+            except Exception:
+                pass
         return data

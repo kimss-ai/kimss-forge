@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import sys
+import uuid
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Set
 
@@ -145,11 +146,38 @@ def run_loop(
                     "reason": "authority_boundary_violation",
                     "message": body[:500],
                 }
+                # Surface to the parent as a structured tool result so the
+                # orchestrator loop can continue without treating it as a crash.
+                synthetic_call_id = f"quarantine_{uuid.uuid4().hex[:12]}"
+                history.append(
+                    {
+                        "role": "assistant",
+                        "content": None,
+                        "tool_calls": [
+                            {
+                                "id": synthetic_call_id,
+                                "type": "function",
+                                "function": {
+                                    "name": "kimss_branch_quarantine",
+                                    "arguments": "{}",
+                                },
+                            }
+                        ],
+                    }
+                )
+                history.append(
+                    {
+                        "role": "tool",
+                        "tool_call_id": synthetic_call_id,
+                        "content": json.dumps(payload),
+                    }
+                )
                 return AgentResult(
                     text=json.dumps(payload),
                     messages=history,
                     hops=hops,
-                    tool_calls=recorded_calls,
+                    tool_calls=recorded_calls
+                    + [{"id": synthetic_call_id, "name": "kimss_branch_quarantine", "arguments": "{}"}],
                     raw=payload,
                 )
             raise

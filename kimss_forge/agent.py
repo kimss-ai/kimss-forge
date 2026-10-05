@@ -6,8 +6,9 @@ import os
 from typing import Any, Dict, List, Optional, Sequence, Union
 
 from .client import ChatClient
-from .gateway import apply_kimss_gateway
+from .gateway import apply_kimss_gateway, gateway_headers
 from .loop import AgentResult, run_loop
+from .run_context import RunContext, ensure_root_context, get_run_context, set_run_context
 from .tools import Tool, coerce_tools
 
 ToolLike = Union[Tool, Any]
@@ -31,6 +32,11 @@ class Agent:
             agent_id="my_agent",
             workspace_key="kimss_...",
         )
+
+    **Declared child hop (depth+1)::**
+
+        child = orchestrator.delegate(agent_id="researcher", model="custom:m")
+        child.run("Summarize the ticket")
     """
 
     def __init__(
@@ -49,6 +55,7 @@ class Agent:
         max_tokens: Optional[int] = None,
         temperature: Optional[float] = None,
         timeout: float = 120.0,
+        run_context: Optional[RunContext] = None,
     ) -> None:
         self.model = (model or "").strip()
         if not self.model:
@@ -58,6 +65,7 @@ class Agent:
         self.max_hops = max_hops
         self.max_tokens = max_tokens
         self.temperature = temperature
+        self._run_context = run_context
 
         gw = (gateway or "").strip().lower()
         extra_headers: Dict[str, str] = {}
@@ -82,19 +90,66 @@ class Agent:
             resolved_base = os.environ.get("OPENAI_BASE_URL")
 
         self.agent_id = (agent_id or "").strip() or None
+        self.agent_name = (agent_name or "").strip() or None
+        self._workspace_key = workspace_key or api_key
+        self._gateway = gw if self._gateway_connected else None
+        self._base_url = resolved_base
+        self._api_key = resolved_key
+        self._timeout = timeout
+
+        if self._gateway_connected:
+            ctx = run_context or get_run_context() or ensure_root_context()
+            self._run_context = ctx
+            set_run_context(ctx)
+            lineage_headers = gateway_headers(
+                agent_id=self.agent_id or "agent",
+                agent_name=self.agent_name,
+                run_id=ctx.run_id,
+                depth=ctx.depth,
+                parent_span=ctx.parent_span,
+                span_id=ctx.span_id,
+                lineage=ctx.lineage,
+            )
+            extra_headers.update(lineage_headers)
+
         self._client = ChatClient(
             api_key=resolved_key,
             base_url=resolved_base,
             default_headers=extra_headers,
             timeout=timeout,
         )
-        if self._gateway_connected and "X-Kimss-Run-Id" not in extra_headers:
-            import uuid
 
-            extra_headers["X-Kimss-Run-Id"] = uuid.uuid4().hex
-            extra_headers["X-Kimss-Depth"] = "0"
-            extra_headers["X-Kimss-Span-Id"] = uuid.uuid4().hex[:16]
-            self._client.default_headers.update(extra_headers)
+    def delegate(
+        self,
+        *,
+        agent_id: str,
+        model: Optional[str] = None,
+        instructions: Optional[str] = None,
+        tools: Optional[Sequence[ToolLike]] = None,
+        agent_name: Optional[str] = None,
+        lineage: Optional[str] = None,
+    ) -> "Agent":
+        """Spawn a child agent at depth+1 sharing the declared run."""
+        if not self._gateway_connected:
+            raise ValueError("delegate() requires gateway='kimss' so lineage is enforced")
+        parent = self._run_context or get_run_context() or ensure_root_context()
+        child_ctx = parent.child(lineage=lineage or parent.lineage)
+        return Agent(
+            model=model or self.model,
+            instructions=instructions if instructions is not None else self.instructions,
+            tools=tools if tools is not None else self.tools,
+            api_key=self._api_key,
+            base_url=self._base_url,
+            gateway=self._gateway or "kimss",
+            workspace_key=self._workspace_key,
+            agent_id=agent_id,
+            agent_name=agent_name or agent_id,
+            max_hops=self.max_hops,
+            max_tokens=self.max_tokens,
+            temperature=self.temperature,
+            timeout=self._timeout,
+            run_context=child_ctx,
+        )
 
     def run(
         self,
@@ -103,6 +158,8 @@ class Agent:
         messages: Optional[List[Dict[str, Any]]] = None,
     ) -> AgentResult:
         """Run one user turn (multi-hop tool loop). Returns AgentResult (str-compatible)."""
+        if self._run_context is not None:
+            set_run_context(self._run_context)
         history: List[Dict[str, Any]] = []
         if self.instructions.strip():
             history.append({"role": "system", "content": self.instructions})
