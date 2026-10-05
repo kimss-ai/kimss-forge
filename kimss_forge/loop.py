@@ -140,10 +140,23 @@ def run_loop(
             )
         except CompletionError as exc:
             body = exc.body or ""
-            if "quarantined" in body.lower() or "delegation_" in body.lower():
+            if "quarantined" in body.lower() or "delegation_" in body.lower() or "run_budget" in body.lower() or "run_hop" in body.lower():
+                reason = "quarantined"
+                body_l = body.lower()
+                for code in (
+                    "delegation_depth_exceeded",
+                    "delegation_lineage_invalid",
+                    "delegation_tool_class_ceiling",
+                    "run_budget_exhausted",
+                    "run_hop_budget_exhausted",
+                    "quarantined",
+                ):
+                    if code in body_l:
+                        reason = code
+                        break
                 payload = {
                     "status": "quarantined",
-                    "reason": "authority_boundary_violation",
+                    "reason": reason,
                     "message": body[:500],
                 }
                 # Surface to the parent as a structured tool result so the
