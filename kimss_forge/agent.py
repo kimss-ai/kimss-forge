@@ -8,7 +8,14 @@ from typing import Any, Dict, List, Optional, Sequence, Union
 from .client import ChatClient
 from .gateway import apply_kimss_gateway, gateway_headers
 from .loop import AgentResult, run_loop
-from .run_context import RunContext, ensure_root_context, get_run_context, set_run_context
+from .run_context import (
+    RunContext,
+    ensure_root_context,
+    get_pending_child,
+    get_run_context,
+    set_run_context,
+    take_pending_child,
+)
 from .tools import Tool, coerce_tools
 
 ToolLike = Union[Tool, Any]
@@ -35,6 +42,8 @@ class Agent:
 
     **Declared child hop (depth+1)::**
 
+        # Parent hop mints the child's HMAC identity in response headers.
+        orchestrator.run("Plan the research")
         child = orchestrator.delegate(agent_id="researcher", model="custom:m")
         child.run("Summarize the ticket")
     """
@@ -119,6 +128,15 @@ class Agent:
             timeout=timeout,
         )
 
+    def _consume_minted_child(self) -> Optional[RunContext]:
+        """Prefer client-stashed mint, then contextvar pending child."""
+        pending = getattr(self._client, "pending_child", None)
+        if pending is not None:
+            self._client.pending_child = None
+            take_pending_child()  # clear contextvar twin if present
+            return pending
+        return take_pending_child() or get_pending_child()
+
     def delegate(
         self,
         *,
@@ -128,12 +146,28 @@ class Agent:
         tools: Optional[Sequence[ToolLike]] = None,
         agent_name: Optional[str] = None,
         lineage: Optional[str] = None,
+        mint_if_needed: bool = True,
     ) -> "Agent":
-        """Spawn a child agent at depth+1 sharing the declared run."""
+        """Spawn a child agent using the gateway-minted next-hop identity.
+
+        The parent must complete at least one ``run()`` so the gateway can sign
+        ``X-Kimss-Lineage`` for depth>0. When ``mint_if_needed`` is True (default),
+        ``delegate`` performs a short parent hop automatically if no mint exists yet.
+        """
         if not self._gateway_connected:
             raise ValueError("delegate() requires gateway='kimss' so lineage is enforced")
-        parent = self._run_context or get_run_context() or ensure_root_context()
-        child_ctx = parent.child(lineage=lineage or parent.lineage)
+        child_ctx = self._consume_minted_child()
+        if child_ctx is None and mint_if_needed:
+            # One declared parent hop mints the child HMAC (Depth/Parent/Span/Lineage).
+            self.run("Prepare to delegate the next step to a child agent.")
+            child_ctx = self._consume_minted_child()
+        if child_ctx is None:
+            raise RuntimeError(
+                "Gateway did not mint child lineage headers. "
+                "Call parent.run(...) once before delegate(), or check gateway connectivity."
+            )
+        if lineage:
+            child_ctx = child_ctx.with_lineage(lineage)
         return Agent(
             model=model or self.model,
             instructions=instructions if instructions is not None else self.instructions,

@@ -1,7 +1,9 @@
 """Declared multi-agent delegation through the Kimss gateway.
 
-Requires a Kimss API key. Lineage headers (Run-Id, Depth, Parent-Span,
-Span-Id, Lineage) are minted automatically when using Agent.delegate().
+Requires a Kimss API key. The parent hop mints child lineage headers
+(Run-Id, Depth, Parent-Span, Span-Id, Lineage); Agent.delegate() consumes
+that mint. If you call delegate() before any parent run, Forge performs a
+short parent hop automatically.
 
   set KIMSS_API_KEY=kimss_...
   set KIMSS_AGENT_ID=orchestrator
@@ -24,10 +26,12 @@ root = Agent(
     agent_id=os.environ.get("KIMSS_AGENT_ID", "orchestrator"),
 )
 
-researcher = root.delegate(
-    agent_id="researcher",
-    instructions="Summarize only from tools or provided context. Be brief.",
-)
-
 if __name__ == "__main__":
+    # Parent hop signs the next child identity (HMAC bound to Depth/Parent/Span).
+    print(root.run("Plan a one-step research handoff; keep the plan under 40 words."))
+    researcher = root.delegate(
+        agent_id="researcher",
+        instructions="Summarize only from tools or provided context. Be brief.",
+        mint_if_needed=False,
+    )
     print(researcher.run("List two risks of unbounded agent fan-out."))

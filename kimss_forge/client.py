@@ -40,6 +40,8 @@ class ChatClient:
         self.base_url = raw_base
         self.default_headers = dict(default_headers or {})
         self.timeout = timeout
+        # Gateway-minted next child hop (set after a successful declared-run response).
+        self.pending_child: Optional[Any] = None
 
     def chat_completions(
         self,
@@ -93,13 +95,14 @@ class ChatClient:
         if lineage:
             data["_kimss_lineage"] = lineage
             try:
-                from .run_context import apply_response_lineage
+                from .run_context import apply_response_lineage, run_context_from_lineage_headers
 
                 apply_response_lineage(data)
-                # Keep child hops able to pick up the minted lineage token.
-                token = lineage.get("X-Kimss-Lineage")
-                if token:
-                    self.default_headers["X-Kimss-Lineage"] = token
+                # Stash next-hop identity on the client; do not overwrite this
+                # hop's request headers (HMAC is bound to the child identity).
+                pending = run_context_from_lineage_headers(lineage)
+                if pending is not None:
+                    self.pending_child = pending
             except Exception:
                 pass
         return data

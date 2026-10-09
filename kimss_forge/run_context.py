@@ -19,7 +19,7 @@ class RunContext:
     lineage: Optional[str] = None
 
     def child(self, *, lineage: Optional[str] = None) -> "RunContext":
-        """Mint a child hop: depth+1, parent=this span, new span_id."""
+        """Local child hop sketch (depth+1). Prefer server-minted pending child."""
         return RunContext(
             run_id=self.run_id,
             depth=int(self.depth) + 1,
@@ -47,6 +47,10 @@ class RunContext:
 
 
 _CURRENT: ContextVar[Optional[RunContext]] = ContextVar("kimss_forge_run_context", default=None)
+# Gateway response headers describe the *next* child hop (HMAC is bound to that identity).
+_PENDING_CHILD: ContextVar[Optional[RunContext]] = ContextVar(
+    "kimss_forge_pending_child", default=None
+)
 
 
 def get_run_context() -> Optional[RunContext]:
@@ -66,36 +70,56 @@ def ensure_root_context() -> RunContext:
     return ctx
 
 
-def apply_response_lineage(data: Dict[str, Any]) -> Optional[RunContext]:
-    """Absorb server-minted lineage headers from a chat.completions response.
+def get_pending_child() -> Optional[RunContext]:
+    return _PENDING_CHILD.get()
 
-    Children must use the returned ``X-Kimss-Lineage`` token; forging depth without
-    it is denied at the gateway.
+
+def set_pending_child(ctx: Optional[RunContext]) -> None:
+    _PENDING_CHILD.set(ctx)
+
+
+def take_pending_child() -> Optional[RunContext]:
+    """Consume the gateway-minted next-hop identity (one child per parent hop)."""
+    pending = _PENDING_CHILD.get()
+    _PENDING_CHILD.set(None)
+    return pending
+
+
+def run_context_from_lineage_headers(lin: Dict[str, Any]) -> Optional[RunContext]:
+    """Build a RunContext from gateway response lineage headers (next hop)."""
+    if not isinstance(lin, dict) or not lin:
+        return None
+    token = lin.get("X-Kimss-Lineage") or lin.get("x-kimss-lineage")
+    run_id = lin.get("X-Kimss-Run-Id") or lin.get("x-kimss-run-id")
+    depth_raw = lin.get("X-Kimss-Depth") or lin.get("x-kimss-depth")
+    parent = lin.get("X-Kimss-Parent-Span") or lin.get("x-kimss-parent-span")
+    span = lin.get("X-Kimss-Span-Id") or lin.get("x-kimss-span-id")
+    if not run_id or span is None or depth_raw is None:
+        return None
+    try:
+        depth = int(depth_raw)
+    except (TypeError, ValueError):
+        return None
+    return RunContext(
+        run_id=str(run_id),
+        depth=depth,
+        parent_span=str(parent) if parent else None,
+        span_id=str(span),
+        lineage=str(token) if token else None,
+    )
+
+
+def apply_response_lineage(data: Dict[str, Any]) -> Optional[RunContext]:
+    """Absorb server-minted *next-hop* lineage from a chat.completions response.
+
+    Response headers (Depth/Parent/Span/Lineage) identify the child hop the gateway
+    just signed. They must not overwrite the current hop's request identity.
+    Children must use ``take_pending_child()`` (via ``Agent.delegate``).
     """
     if not isinstance(data, dict):
         return get_run_context()
     lin = data.get("_kimss_lineage") if isinstance(data.get("_kimss_lineage"), dict) else {}
-    cur = get_run_context()
-    if not lin:
-        return cur
-    token = lin.get("X-Kimss-Lineage") or lin.get("x-kimss-lineage")
-    run_id = lin.get("X-Kimss-Run-Id") or lin.get("x-kimss-run-id")
-    span = lin.get("X-Kimss-Span-Id") or lin.get("x-kimss-span-id")
-    if cur is None:
-        cur = RunContext(
-            run_id=str(run_id or uuid.uuid4().hex),
-            depth=0,
-            span_id=str(span or uuid.uuid4().hex[:16]),
-            lineage=str(token) if token else None,
-        )
-        _CURRENT.set(cur)
-        return cur
-    updated = cur
-    if token:
-        updated = updated.with_lineage(str(token))
-    if span and not cur.span_id:
-        updated = replace(updated, span_id=str(span))
-    if run_id and not cur.run_id:
-        updated = replace(updated, run_id=str(run_id))
-    _CURRENT.set(updated)
-    return updated
+    pending = run_context_from_lineage_headers(lin)
+    if pending is not None:
+        set_pending_child(pending)
+    return get_run_context()
