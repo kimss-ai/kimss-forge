@@ -114,7 +114,8 @@ def apply_response_lineage(data: Dict[str, Any]) -> Optional[RunContext]:
 
     Response headers (Depth/Parent/Span/Lineage) identify the child hop the gateway
     just signed. They must not overwrite the current hop's request identity.
-    Children must use ``take_pending_child()`` (via ``Agent.delegate``).
+    ``Agent.delegate`` reads the mint stashed on the client that received this
+    response. The contextvar is only a twin of that same hop.
     """
     if not isinstance(data, dict):
         return get_run_context()

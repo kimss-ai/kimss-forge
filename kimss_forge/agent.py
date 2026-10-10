@@ -21,6 +21,16 @@ from .tools import Tool, coerce_tools
 ToolLike = Union[Tool, Any]
 
 
+def _same_mint(a: RunContext, b: RunContext) -> bool:
+    """True when two header parses describe the same gateway-minted hop."""
+    return (
+        a.run_id == b.run_id
+        and int(a.depth) == int(b.depth)
+        and a.span_id == b.span_id
+        and (a.parent_span or None) == (b.parent_span or None)
+    )
+
+
 class Agent:
     """
     Standalone agent harness.
@@ -129,13 +139,21 @@ class Agent:
         )
 
     def _consume_minted_child(self) -> Optional[RunContext]:
-        """Prefer client-stashed mint, then contextvar pending child."""
+        """Return the child identity minted for this agent only.
+
+        ``ChatClient.pending_child`` is the mint from this agent's last hop.
+        The process-wide contextvar is whichever response ran last in the
+        thread, including a child that already executed. Adopting that twin
+        would start the next sibling at the child's depth and span.
+        """
         pending = getattr(self._client, "pending_child", None)
-        if pending is not None:
-            self._client.pending_child = None
-            take_pending_child()  # clear contextvar twin if present
-            return pending
-        return take_pending_child() or get_pending_child()
+        if pending is None:
+            return None
+        self._client.pending_child = None
+        twin = get_pending_child()
+        if twin is not None and _same_mint(twin, pending):
+            take_pending_child()
+        return pending
 
     def delegate(
         self,
