@@ -9,6 +9,8 @@
 
 **Lightweight, MCP-native agent harness for Python developers who want a local loop today and enterprise governance tomorrow — without rewriting the agent.**
 
+> **New Kimss gateway integration** starts at the public hub [ONBOARDING.md](https://github.com/kimss-ai/kimss-control-plane/blob/main/ONBOARDING.md). This repo is the Python agent client (`gateway="kimss"`).
+
 [![Watch the Demo](docs/demo-poster.png)](https://github.com/kimss-ai/kimss-forge/releases/download/demo-assets/kimss-readme-forge-zero-to-one.mp4)
 
 > **Demo (16:9):** local agent → soft Authority Boundary warning → `gateway="kimss"` → Kill Switch free / enterprise path. Public MP4: [demo-assets release](https://github.com/kimss-ai/kimss-forge/releases/tag/demo-assets) (no GitHub login). Product page: [kimss.ai/open-source](https://kimss.ai/open-source).

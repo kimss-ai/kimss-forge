@@ -50,11 +50,12 @@ This routes traffic to `https://api.kimss.ai/v1` and sends:
 
 ## Do NOT
 
-- Do not `pip install kimss` or add Maven `com.kimss:kimss-java`. Those control-plane clients are deprecated. Production is `gateway="kimss"` on this `Agent`.
+- Do not `pip install kimss` or add Maven `ai.kimss:kimss-java` for Path A chat. Those control-plane / lineage clients are optional (swarm). Production for this harness is `gateway="kimss"` on this `Agent`.
+- New gateway onboarding for any stack starts at https://github.com/kimss-ai/kimss-control-plane (`ONBOARDING.md`). This package is the client when building a new Python agent.
 - Do not invent a custom hop loop when `kimss_forge.Agent` fits.
 - Do not open-source or import Hermis (`kimssapi_functions.hermis`) — proprietary.
 - Do not claim Authority Boundary / SSO / SCIM are free — those are paid Kimss control-plane features.
-- Kill switch is available on the free Developer gateway after `gateway="kimss"`.
+- Kill switch and agent discovery need `X-Kimss-Agent-Id` on a live governed call after `gateway="kimss"` — not the key alone. `X-Kimss-Client` is an optional Forge tag.
 
 ## Package facts
 
